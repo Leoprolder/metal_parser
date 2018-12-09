@@ -26,3 +26,17 @@ C:\Users\Антон\Documents\Visual Studio 2017\Projects\MetalParser\MetalParse
 C:\Users\Антон\Documents\Visual Studio 2017\Projects\MetalParser\MetalParser\obj\Debug\MetalParser.csproj.CopyComplete
 C:\Users\Антон\Documents\Visual Studio 2017\Projects\MetalParser\MetalParser\obj\Debug\MetalParser.exe
 C:\Users\Антон\Documents\Visual Studio 2017\Projects\MetalParser\MetalParser\obj\Debug\MetalParser.pdb
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.csprojAssemblyReference.cache
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.Form1.resources
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.Properties.Resources.resources
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.GenerateResource.cache
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CoreCompileInputs.cache
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.exe
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.pdb
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\bin\Debug\MetalParser.exe.config
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\bin\Debug\MetalParser.exe
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\bin\Debug\MetalParser.pdb
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\bin\Debug\HtmlAgilityPack.dll
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\bin\Debug\HtmlAgilityPack.pdb
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\bin\Debug\HtmlAgilityPack.xml
+C:\Users\Tortopus\Documents\Visual Studio 2017\Projects\repositores\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CopyComplete

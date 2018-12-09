@@ -1,18 +1,12 @@
 ﻿using HtmlAgilityPack;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 
 namespace MetalParser
-{    
+{
     public partial class Form1 : Form
     {
         string platinum = "https://ru.investing.com/commodities/platinum";
@@ -21,7 +15,7 @@ namespace MetalParser
         Timer tpt = new Timer();
         Timer tau = new Timer();
         Timer tag = new Timer();
-        int timeout = 10 * 60 * 1000; //12 минут
+        int timeout = 10 * 60 * 1000; //10 минут
         //int timeout = 5000;
         string platinum_path = "@/data/platinum-cfd.txt";
         string gold_path = "@/data/gold-cfd.txt";
@@ -51,6 +45,11 @@ namespace MetalParser
             return metal;
         }
 
+        /// <summary>
+        /// Метод асинхронно получает значение для соответствующего металла и записывает его в файл
+        /// </summary>
+        /// <param name="url">Ссылка на страницу со значением стоимости металла</param>
+        /// <param name="opt">Вариант металла: 1 - платина, 2 - золото, 3 - серебро</param>
         private async void GetValue(string url, int opt)
         {
             string value = await FindValue(url);
@@ -86,20 +85,24 @@ namespace MetalParser
             //await Task.Delay(60000);
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             /*string value = await GetValue(platinum);
             Console.WriteLine(value);*/
             button1.Enabled = false;
             button2.Enabled = true;
+
             tpt.Interval = timeout;
             tpt.Tick += (timer, arguments) => GetValue(platinum,1);
             tpt.Start();
+
+            tau.Interval = timeout;
+            tau.Tick += (timer, arguments) => GetValue(gold, 2);
+            tau.Start();
+
+            tag.Interval = timeout;
+            tag.Tick += (timer, arguments) => GetValue(silver, 3);
+            tag.Start();
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -107,42 +110,7 @@ namespace MetalParser
             button1.Enabled = true;
             button2.Enabled = false;
             tpt.Stop();
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            button4.Enabled = false;
-            button3.Enabled = true;
-            tau.Interval = timeout;
-            tau.Tick += (timer, arguments) => GetValue(gold,2);
-            tau.Start();
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            button4.Enabled = true;
-            button3.Enabled = false;
             tau.Stop();
-        }
-
-        private void button6_Click(object sender, EventArgs e)
-        {
-            button6.Enabled = false;
-            button5.Enabled = true;
-            tag.Interval = timeout;
-            tag.Tick += (timer, arguments) => GetValue(silver,3);
-            tag.Start();
-        }
-
-        private void button5_Click(object sender, EventArgs e)
-        {
-            button6.Enabled = true;
-            button5.Enabled = false;
             tag.Stop();
         }
     }
