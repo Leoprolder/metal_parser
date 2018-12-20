@@ -13,11 +13,14 @@ namespace MetalParser
         string platinum = "https://ru.investing.com/commodities/platinum";
         string gold = "https://ru.investing.com/commodities/gold";
         string silver = "https://ru.investing.com/commodities/silver";
-        string samsung = "https://ru.investing.com/equities/samsung-electronics-co-ltd";
+        //string samsung = "https://ru.investing.com/equities/samsung-electronics-co-ltd";
+        string samsung = "https://ru.investing.com/equities/samsung-electronics-co-ltd-gdr";
         string apple = "https://ru.investing.com/equities/apple-computer-inc";
         Timer tpt = new Timer();
         Timer tau = new Timer();
         Timer tag = new Timer();
+        Timer tSamsung = new Timer();
+        Timer tApple = new Timer();
         //int timeout = 10 * 60 * 1000; //10 минут
         int timeout = 5000;
 
@@ -77,16 +80,35 @@ namespace MetalParser
             switch (option)
             {
                 case "platinum":
-                    textBox1.Text += line + Environment.NewLine;
                     using (StreamWriter sw = new StreamWriter(platinum_path, true))
                     {
                         sw.WriteLine(line);
-                        if(value != "lost connection")
+                        if (value != "lost connection")
+                        {
+                            if(Double.Parse(value) > (platinumValues.Count > 1 ? platinumValues[platinumValues.Count-1] : 0))
+                            {
+                                label4.Text = value;
+                                label4.ForeColor = System.Drawing.Color.Green;
+                            }
+                            else if((Double.Parse(value) == (platinumValues.Count > 1 ? platinumValues[platinumValues.Count - 1] : 0)))
+                            {
+                                label4.Text = value;
+                                label4.ForeColor = System.Drawing.Color.Black;
+                            }
+                            else
+                            {
+                                label4.Text = value;
+                                label4.ForeColor = System.Drawing.Color.Red;
+                            }
+
+                            label7.Text = DoLineExtr(platinumValues, 5).ToString();
+
                             platinumValues.Add(Double.Parse(value));
+                        }
                     }
                         break;
                 case "gold":
-                    textBox2.Text += line + Environment.NewLine;
+                    //textBox2.Text += line + Environment.NewLine;
                     using (StreamWriter sw = new StreamWriter(gold_path, true))
                     {
                         sw.WriteLine(line);
@@ -95,7 +117,7 @@ namespace MetalParser
                     }
                     break;
                 case "silver":
-                    textBox3.Text += line + Environment.NewLine;
+                    //textBox3.Text += line + Environment.NewLine;
                     using (StreamWriter sw = new StreamWriter(silver_path, true))
                     {
                         sw.WriteLine(line);
@@ -104,19 +126,61 @@ namespace MetalParser
                     }
                     break;
                 case "samsung":
+                    textBox1.Text += line + Environment.NewLine;
                     using (StreamWriter sw = new StreamWriter(samsung_path, true))
                     {
                         sw.WriteLine(line);
                         if (value != "lost connection")
+                        {
+                            if (Double.Parse(value) > (samsungValues.Count > 1 ? samsungValues[samsungValues.Count - 1] : 0))
+                            {
+                                label4.Text = value;
+                                label4.ForeColor = System.Drawing.Color.Green;
+                            }
+                            else if ((Double.Parse(value) == (samsungValues.Count > 1 ? samsungValues[samsungValues.Count - 1] : 0)))
+                            {
+                                label4.Text = value;
+                                label4.ForeColor = System.Drawing.Color.Black;
+                            }
+                            else
+                            {
+                                label4.Text = value;
+                                label4.ForeColor = System.Drawing.Color.Red;
+                            }
+
+                            label7.Text = DoLineExtr(samsungValues, 5).ToString();
+
                             samsungValues.Add(Double.Parse(value));
+                        }
                     }
                     break;
                 case "apple":
+                    textBox2.Text += line + Environment.NewLine;
                     using (StreamWriter sw = new StreamWriter(apple_path, true))
                     {
                         sw.WriteLine(line);
                         if (value != "lost connection")
+                        {
+                            if (Double.Parse(value) > (appleValues.Count > 1 ? appleValues[appleValues.Count - 1] : 0))
+                            {
+                                label5.Text = value;
+                                label5.ForeColor = System.Drawing.Color.Green;
+                            }
+                            else if ((Double.Parse(value) == (appleValues.Count > 1 ? appleValues[appleValues.Count - 1] : 0)))
+                            {
+                                label5.Text = value;
+                                label5.ForeColor = System.Drawing.Color.Black;
+                            }
+                            else
+                            {
+                                label5.Text = value;
+                                label5.ForeColor = System.Drawing.Color.Red;
+                            }
+
+                            label3.Text = DoLineExtr(appleValues, 5).ToString();
+
                             appleValues.Add(Double.Parse(value));
+                        }
                     }
                     break;
                 default:
@@ -127,11 +191,14 @@ namespace MetalParser
 
         private double DoLineExtr(List<double> inputList, int interval)
         {
-            List<double> valuesList = inputList;
-            List<double> incrementList = new List<double>(interval);
+            List<double> valuesList = new List<double>(inputList);
+            List<double> incrementList = new List<double>();
             incrementList.Add(0);
-            interval = interval > inputList.Count ? inputList.Count : interval; //Если заданный интервал длиннее списка, 
-            valuesList.RemoveRange(inputList.Count-interval,interval);          //то укорачиваем до длины самого списка
+            if (interval > inputList.Count)
+                interval = inputList.Count;
+
+            //valuesList.RemoveRange(inputList.Count - interval - 1, interval);
+            valuesList.RemoveRange(0, valuesList.Count - interval);
             
             for(int i = 1; i < interval; i++)
                 incrementList.Add(valuesList[i] - valuesList[i - 1]);
@@ -151,6 +218,10 @@ namespace MetalParser
             {
                 double value;
                 string line;
+
+                if (sr.EndOfStream)
+                    return;
+
                 while ((line = sr.ReadLine()) != null)
                 {
                     value = Double.Parse(line.Substring(line.IndexOf('|') + 2));
@@ -166,26 +237,36 @@ namespace MetalParser
             button1.Enabled = false;
             button2.Enabled = true;
 
-            tpt.Interval = timeout;
-            tpt.Tick += (timer, arguments) => GetValue(platinum,"platinum");
-            tpt.Start();
+            tSamsung.Interval = timeout;
+            tSamsung.Tick += (timer, arguments) => GetValue(samsung, "samsung");
+            tSamsung.Start();
 
-            tau.Interval = timeout;
-            tau.Tick += (timer, arguments) => GetValue(gold, "gold");
-            tau.Start();
+            tApple.Interval = timeout;
+            tApple.Tick += (timer, arguments) => GetValue(apple, "apple");
+            tApple.Start();
 
-            tag.Interval = timeout;
-            tag.Tick += (timer, arguments) => GetValue(silver, "silver");
-            tag.Start();
+            //tpt.Interval = timeout;
+            //tpt.Tick += (timer, arguments) => GetValue(platinum,"platinum");
+            //tpt.Start();
+
+            //tau.Interval = timeout;
+            //tau.Tick += (timer, arguments) => GetValue(gold, "gold");
+            //tau.Start();
+
+            //tag.Interval = timeout;
+            //tag.Tick += (timer, arguments) => GetValue(silver, "silver");
+            //tag.Start();
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
             button1.Enabled = true;
             button2.Enabled = false;
-            tpt.Stop();
-            tau.Stop();
-            tag.Stop();
+            tSamsung.Stop();
+            tApple.Stop();
+            //tpt.Stop();
+            //tau.Stop();
+            //tag.Stop();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -195,12 +276,19 @@ namespace MetalParser
                 FillValueListsFromFile(platinum_path, platinumValues);
                 FillValueListsFromFile(gold_path, goldValues);
                 FillValueListsFromFile(silver_path, silverValues);
+                FillValueListsFromFile(samsung_path, samsungValues);
+                FillValueListsFromFile(apple_path, appleValues);
             }
             catch(Exception ex)
             {
 
             }
             int a = platinumValues.Count;
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
