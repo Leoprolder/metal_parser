@@ -22,7 +22,7 @@ namespace MetalParser
         Timer tSamsung = new Timer();
         Timer tApple = new Timer();
         //int timeout = 10 * 60 * 1000; //10 минут
-        int timeout = 5000;
+        int timeout = 60000;
 
         string platinum_path = "@/data/platinum-cfd.txt";
         string gold_path = "@/data/gold-cfd.txt";
@@ -71,6 +71,7 @@ namespace MetalParser
             string value = await FindValue(url);
             value = value.Replace(".", "");
             string line = DateTime.Now.ToString("dd.MM.yy hh:mm | ") + value;
+            double lineExtr = 0;
             //string line = DateTime.Now.Year + "." + 
             //    DateTime.Now.Month + "." + 
             //    DateTime.Now.Day + " " + 
@@ -126,7 +127,6 @@ namespace MetalParser
                     }
                     break;
                 case "samsung":
-                    textBox1.Text += line + Environment.NewLine;
                     using (StreamWriter sw = new StreamWriter(samsung_path, true))
                     {
                         sw.WriteLine(line);
@@ -147,15 +147,15 @@ namespace MetalParser
                                 label4.Text = value;
                                 label4.ForeColor = System.Drawing.Color.Red;
                             }
-
-                            label7.Text = DoLineExtr(samsungValues, 5).ToString();
-
+                            
+                            lineExtr = DoLineExtr(samsungValues, 5);
+                            line += "; expected " + lineExtr;
                             samsungValues.Add(Double.Parse(value));
                         }
                     }
+                    textBox1.Text += line + Environment.NewLine;
                     break;
                 case "apple":
-                    textBox2.Text += line + Environment.NewLine;
                     using (StreamWriter sw = new StreamWriter(apple_path, true))
                     {
                         sw.WriteLine(line);
@@ -177,11 +177,12 @@ namespace MetalParser
                                 label5.ForeColor = System.Drawing.Color.Red;
                             }
 
-                            label3.Text = DoLineExtr(appleValues, 5).ToString();
-
+                            lineExtr = DoLineExtr(appleValues, 5);
+                            line += "; expected " + lineExtr;
                             appleValues.Add(Double.Parse(value));
                         }
                     }
+                    textBox2.Text += line + Environment.NewLine;
                     break;
                 default:
                     break;
@@ -283,7 +284,6 @@ namespace MetalParser
             {
 
             }
-            int a = platinumValues.Count;
         }
 
         private void label1_Click(object sender, EventArgs e)
