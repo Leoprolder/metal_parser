@@ -55,6 +55,11 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="Predicting\ARMAPredictor.cs" />
+    <Compile Include="Predicting\MAPredictor.cs" />
+    <Compile Include="Predicting\PredictorFactory.cs" />
+    <Compile Include="Predicting\PredictorTypes.cs" />
+    <Compile Include="Predicting\SSAPredictor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Form1.resx">
