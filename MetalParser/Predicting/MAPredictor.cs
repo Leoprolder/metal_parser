@@ -10,7 +10,14 @@ namespace MetalParser.Predicting
     {
         public static double Predict(List<Double> values)
         {
-            return 0;
+            Double maSum = 0;
+
+            for(int i = values.Count - 1; i > values.Count/10; i--) //Gotta get rid of magic number
+            {
+                maSum += values[i];
+            }
+
+            return maSum/ values.Count / 10;
         }
     }
 }
