@@ -8,7 +8,7 @@ namespace MetalParser.Predicting
 {
     class MAPredictor
     {
-        public static double Predict()
+        public static double Predict(List<Double> values)
         {
             return 0;
         }

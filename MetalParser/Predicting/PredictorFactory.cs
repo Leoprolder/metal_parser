@@ -15,22 +15,22 @@ namespace MetalParser.Predicting
             _type = type;
         }
 
-        public double? PredictValue(PredictorTypes type)
+        public double? PredictValue(PredictorTypes type, List<Double> values)
         {
             double? predictedValue = null;
 
             switch (type)
             {
                 case (PredictorTypes.MA):
-                    predictedValue = MAPredictor.Predict();
+                    predictedValue = MAPredictor.Predict(values);
                     break;
 
                 case (PredictorTypes.ARMA):
-                    predictedValue = ARMAPredictor.Predict();
+                    predictedValue = ARMAPredictor.Predict(values);
                     break;
 
                 case (PredictorTypes.SSA):
-                    predictedValue = SSAPredictor.Predict();
+                    predictedValue = SSAPredictor.Predict(values);
                     break;
             }
 
