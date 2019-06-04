@@ -50,8 +50,9 @@ function [y,r,vr]=ssa(x1,L)
     [U,autoval]=eig(S);
     [d,i]=sort(-diag(autoval));  
    d=-d;
-   U=U(:,i);sev=sum(d); 
-    plot((d./sev)*100),hold on,plot((d./sev)*100,'rx');
+   U=U(:,i);
+   sev=sum(d); 
+    plot((d./sev)*100),hold on,plot((d./sev)*100,'rx'); %Не столь необходимо
     title('Singular Spectrum');xlabel('Eigenvalue Number');ylabel('Eigenvalue (% Norm of trajectory matrix retained)')
    V=(X')*U; 
    rc=U*V';

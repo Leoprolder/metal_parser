@@ -1,0 +1,9 @@
+LIBRARY plane
+EXPORTS
+planeInitialize
+planeInitializeWithHandlers
+planeTerminate
+planePrintStackTrace
+mlxPlane
+mlfPlane
+
