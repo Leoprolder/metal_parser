@@ -10,7 +10,7 @@ namespace MetalParser.Predicting
     {
         private int L = 100;
 
-        public static double Predict(List<Double> values)
+        public static double Predict(List<Double> values, int accuracy)
         {
             return 0;
         }
@@ -37,6 +37,61 @@ namespace MetalParser.Predicting
             return X;
         }
 
+        private void SVD(List<Double> values, int accuracy)
+        {
+            Double[,] X = BuildTrayectoryMatrix(values);
+            Double[,] S = MultiplyMatriсes(X, Transpose(X));
 
+
+        }
+
+        private void Group()
+        {
+
+        }
+
+        private void Reconstruct()
+        {
+
+        }
+
+        private Double[,] Transpose(Double[,] matrix)
+        {
+            Double[,] transposedMatrix = null;
+
+            int width = matrix.GetLength(0);
+            int height = matrix.GetLength(1);
+
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    transposedMatrix[i, j] = matrix[j, i];
+                }
+            }
+
+            return transposedMatrix;
+        }
+
+        private Double[,] MultiplyMatriсes(Double[,] leftMatrix, Double[,] rightMatrix)
+        {
+            Double[,] result = new Double[leftMatrix.GetLength(0), rightMatrix.GetLength(1)];
+
+            int width = leftMatrix.GetLength(0);
+            int height = rightMatrix.GetLength(1);
+
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    for (int k = 0; k < rightMatrix.GetLength(0); k++)
+                    {
+                        result[i, j] += leftMatrix[i,k] * rightMatrix[k, j];
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 }
