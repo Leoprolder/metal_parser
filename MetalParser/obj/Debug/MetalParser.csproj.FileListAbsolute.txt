@@ -68,3 +68,10 @@ C:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CoreCompil
 C:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CopyComplete
 C:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.exe
 C:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.pdb
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csprojAssemblyReference.cache
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.Form1.resources
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.Properties.Resources.resources
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.GenerateResource.cache
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CoreCompileInputs.cache
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.exe
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.pdb

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MetalParser.Predicting
 {
@@ -26,7 +23,7 @@ namespace MetalParser.Predicting
                     break;
 
                 case (PredictorTypes.ARMA):
-                    predictedValue = ARMAPredictor.Predict(values);
+                    predictedValue = ARMAPredictor.Predict(values, accuracy);
                     break;
 
                 case (PredictorTypes.SSA):
