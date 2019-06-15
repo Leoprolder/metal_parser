@@ -10,17 +10,17 @@ namespace MetalParser
 {
     public partial class Form1 : Form
     {
-        string platinum = "https://ru.investing.com/commodities/platinum";
-        string gold = "https://ru.investing.com/commodities/gold";
-        string silver = "https://ru.investing.com/commodities/silver";
+        //string platinum = "https://ru.investing.com/commodities/platinum";
+        //string gold = "https://ru.investing.com/commodities/gold";
+        //string silver = "https://ru.investing.com/commodities/silver";
         //string samsung = "https://ru.investing.com/equities/samsung-electronics-co-ltd";
         string samsung = "https://ru.investing.com/equities/samsung-electronics-co-ltd-gdr";
-        string apple = "https://ru.investing.com/equities/apple-computer-inc";
-        Timer tpt = new Timer();
-        Timer tau = new Timer();
-        Timer tag = new Timer();
+        //string apple = "https://ru.investing.com/equities/apple-computer-inc";
+        //Timer tpt = new Timer();
+        //Timer tau = new Timer();
+        //Timer tag = new Timer();
         Timer tSamsung = new Timer();
-        Timer tApple = new Timer();
+        //Timer tApple = new Timer();
         //int timeout = 10 * 60 * 1000; //10 минут
         int timeout = 60000;
 
@@ -43,7 +43,7 @@ namespace MetalParser
 
         private static async Task<string> FindValue(string Url)
         {
-            string parseValue = null;
+            string parsedValue = null;
             await Task.Run(async () =>
             {
                 try
@@ -51,14 +51,14 @@ namespace MetalParser
                     HtmlWeb web = new HtmlWeb();
                     HtmlDocument doc = web.Load(Url);
                     if (doc != null)
-                        parseValue = doc.DocumentNode.SelectNodes("//*[@id='last_last']")[0].InnerText;
+                        parsedValue = doc.DocumentNode.SelectNodes("//*[@id='last_last']")[0].InnerText;
                 }
                 catch (Exception)
                 {
-                    parseValue = "lost connection";
+                    parsedValue = "lost connection";
                 }
             });
-            return parseValue;
+            return parsedValue;
         }
 
         /// <summary>
@@ -241,22 +241,6 @@ namespace MetalParser
             tSamsung.Interval = timeout;
             tSamsung.Tick += (timer, arguments) => GetValue(samsung, "samsung");
             tSamsung.Start();
-
-            tApple.Interval = timeout;
-            tApple.Tick += (timer, arguments) => GetValue(apple, "apple");
-            tApple.Start();
-
-            //tpt.Interval = timeout;
-            //tpt.Tick += (timer, arguments) => GetValue(platinum,"platinum");
-            //tpt.Start();
-
-            //tau.Interval = timeout;
-            //tau.Tick += (timer, arguments) => GetValue(gold, "gold");
-            //tau.Start();
-
-            //tag.Interval = timeout;
-            //tag.Tick += (timer, arguments) => GetValue(silver, "silver");
-            //tag.Start();
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -264,21 +248,17 @@ namespace MetalParser
             button1.Enabled = true;
             button2.Enabled = false;
             tSamsung.Stop();
-            tApple.Stop();
-            //tpt.Stop();
-            //tau.Stop();
-            //tag.Stop();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             try
             {
-                FillValueListsFromFile(platinum_path, platinumValues);
-                FillValueListsFromFile(gold_path, goldValues);
-                FillValueListsFromFile(silver_path, silverValues);
+                //FillValueListsFromFile(platinum_path, platinumValues);
+                //FillValueListsFromFile(gold_path, goldValues);
+                //FillValueListsFromFile(silver_path, silverValues);
                 FillValueListsFromFile(samsung_path, samsungValues);
-                FillValueListsFromFile(apple_path, appleValues);
+                //FillValueListsFromFile(apple_path, appleValues);
             }
             catch(Exception ex)
             {
