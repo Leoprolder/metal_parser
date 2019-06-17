@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace MetalParser
 {
@@ -14,7 +17,7 @@ namespace MetalParser
         //string gold = "https://ru.investing.com/commodities/gold";
         //string silver = "https://ru.investing.com/commodities/silver";
         //string samsung = "https://ru.investing.com/equities/samsung-electronics-co-ltd";
-        string samsung = "https://ru.investing.com/equities/samsung-electronics-co-ltd-gdr";
+        string samsungUrl = "https://ru.investing.com/equities/samsung-electronics-co-ltd-gdr";
         //string apple = "https://ru.investing.com/equities/apple-computer-inc";
         //Timer tpt = new Timer();
         //Timer tau = new Timer();
@@ -28,6 +31,7 @@ namespace MetalParser
         string gold_path = "@/data/gold-cfd.txt";
         string silver_path = "@/data/silver-cfd.txt";
         string samsung_path = "@/data/Samsung-electronincs-Co.txt";
+        string samsungJsonData = "@/data/samsung.json";
         string apple_path = "@/data/Apple.txt";
 
         List<double> platinumValues = new List<double>();
@@ -66,154 +70,27 @@ namespace MetalParser
         /// </summary>
         /// <param name="url">Ссылка на страницу со значением стоимости металла</param>
         /// <param name="option">Вариант металла: platinum, gold, silver</param>
-        private async void GetValue(string url, string option)
+        private async void GetValue(string url)
         {
             string value = await FindValue(url);
             value = value.Replace(".", "");
-            string line = DateTime.Now.ToString("dd.MM.yy hh:mm | ") + value;
+            string date = DateTime.Now.ToString("dd.MM.yy hh:mm");
+            string line = $"{date} | {value}";
             double lineExtr = 0;
-            //string line = DateTime.Now.Year + "." + 
-            //    DateTime.Now.Month + "." + 
-            //    DateTime.Now.Day + " " + 
-            //    DateTime.Now.Hour + ":" + 
-            //    DateTime.Now.Minute + " | " + value;
             
-            switch (option)
+            using (StreamWriter sw = new StreamWriter(samsung_path, true)) //переделать на json
             {
-                case "platinum":
-                    using (StreamWriter sw = new StreamWriter(platinum_path, true))
-                    {
-                        sw.WriteLine(line);
-                        if (value != "lost connection")
-                        {
-                            if(Double.Parse(value) > (platinumValues.Count > 1 ? platinumValues[platinumValues.Count-1] : 0))
-                            {
-                                label4.Text = value;
-                                label4.ForeColor = System.Drawing.Color.Green;
-                            }
-                            else if((Double.Parse(value) == (platinumValues.Count > 1 ? platinumValues[platinumValues.Count - 1] : 0)))
-                            {
-                                label4.Text = value;
-                                label4.ForeColor = System.Drawing.Color.Black;
-                            }
-                            else
-                            {
-                                label4.Text = value;
-                                label4.ForeColor = System.Drawing.Color.Red;
-                            }
-
-                            label7.Text = DoLineExtr(platinumValues, 5).ToString();
-
-                            platinumValues.Add(Double.Parse(value));
-                        }
-                    }
-                        break;
-                case "gold":
-                    //textBox2.Text += line + Environment.NewLine;
-                    using (StreamWriter sw = new StreamWriter(gold_path, true))
-                    {
-                        sw.WriteLine(line);
-                        if (value != "lost connection")
-                            goldValues.Add(Double.Parse(value));
-                    }
-                    break;
-                case "silver":
-                    //textBox3.Text += line + Environment.NewLine;
-                    using (StreamWriter sw = new StreamWriter(silver_path, true))
-                    {
-                        sw.WriteLine(line);
-                        if (value != "lost connection")
-                            silverValues.Add(Double.Parse(value));
-                    }
-                    break;
-                case "samsung":
-                    using (StreamWriter sw = new StreamWriter(samsung_path, true))
-                    {
-                        sw.WriteLine(line);
-                        if (value != "lost connection")
-                        {
-                            if (Double.Parse(value) > (samsungValues.Count > 1 ? samsungValues[samsungValues.Count - 1] : 0))
-                            {
-                                label4.Text = value;
-                                label4.ForeColor = System.Drawing.Color.Green;
-                            }
-                            else if ((Double.Parse(value) == (samsungValues.Count > 1 ? samsungValues[samsungValues.Count - 1] : 0)))
-                            {
-                                label4.Text = value;
-                                label4.ForeColor = System.Drawing.Color.Black;
-                            }
-                            else
-                            {
-                                label4.Text = value;
-                                label4.ForeColor = System.Drawing.Color.Red;
-                            }
-                            
-                            lineExtr = DoLineExtr(samsungValues, 5);
-                            line += "; expected " + lineExtr;
-                            samsungValues.Add(Double.Parse(value));
-                        }
-                    }
-                    textBox1.Text += line + Environment.NewLine;
-                    break;
-                case "apple":
-                    using (StreamWriter sw = new StreamWriter(apple_path, true))
-                    {
-                        sw.WriteLine(line);
-                        if (value != "lost connection")
-                        {
-                            if (Double.Parse(value) > (appleValues.Count > 1 ? appleValues[appleValues.Count - 1] : 0))
-                            {
-                                label5.Text = value;
-                                label5.ForeColor = System.Drawing.Color.Green;
-                            }
-                            else if ((Double.Parse(value) == (appleValues.Count > 1 ? appleValues[appleValues.Count - 1] : 0)))
-                            {
-                                label5.Text = value;
-                                label5.ForeColor = System.Drawing.Color.Black;
-                            }
-                            else
-                            {
-                                label5.Text = value;
-                                label5.ForeColor = System.Drawing.Color.Red;
-                            }
-
-                            lineExtr = DoLineExtr(appleValues, 5);
-                            line += "; expected " + lineExtr;
-                            appleValues.Add(Double.Parse(value));
-                        }
-                    }
-                    textBox2.Text += line + Environment.NewLine;
-                    break;
-                default:
-                    break;
+                sw.WriteLine(line);
+                if (value != "lost connection")
+                {
+                    line += "; expected " + lineExtr;
+                    samsungValues.Add(Double.Parse(value));
+                }
             }
-            //await Task.Delay(60000);
+            textBox1.Text += line + Environment.NewLine;
         }
 
-        private double DoLineExtr(List<double> inputList, int interval)
-        {
-            List<double> valuesList = new List<double>(inputList);
-            List<double> incrementList = new List<double>();
-            incrementList.Add(0);
-            if (interval > inputList.Count)
-                interval = inputList.Count;
-
-            //valuesList.RemoveRange(inputList.Count - interval - 1, interval);
-            valuesList.RemoveRange(0, valuesList.Count - interval);
-            
-            for(int i = 1; i < interval; i++)
-                incrementList.Add(valuesList[i] - valuesList[i - 1]);
-
-            double averageIncrement = 0;
-            foreach (double value in incrementList)
-                averageIncrement += value;
-
-            averageIncrement /= incrementList.Count;
-
-            return inputList[inputList.Count - 1] + averageIncrement;
-        }
-
-        private void FillValueListsFromFile(string path, List<double> valuesList)
+        private void FillValueListsFromFile(string path, List<double> valuesList) //переделать на json
         {
             using (StreamReader sr = new StreamReader(path, System.Text.Encoding.Default))
             {
@@ -239,7 +116,7 @@ namespace MetalParser
             button2.Enabled = true;
 
             tSamsung.Interval = timeout;
-            tSamsung.Tick += (timer, arguments) => GetValue(samsung, "samsung");
+            tSamsung.Tick += (timer, arguments) => GetValue(samsungUrl);
             tSamsung.Start();
         }
 
@@ -269,6 +146,30 @@ namespace MetalParser
         private void label1_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Chart bar = new Chart();
+            bar.Parent = this;
+            bar.Dock = DockStyle.None;
+            bar.Location = new System.Drawing.Point(388, 81);
+            bar.Margin = new Padding(3, 3, 3, 3);
+            bar.Size = new System.Drawing.Size(519, 382);
+            bar.ChartAreas.Add(new ChartArea("Time series"));
+            Series series = new Series("test");
+            series.ChartType = SeriesChartType.Line;
+            for (double x = -Math.PI; x <= Math.PI; x += Math.PI / 10.0)
+            {
+                series.Points.AddXY(x, Math.Sin(x));
+            }
+
+            bar.Series.Add(series);
         }
     }
 }
