@@ -8,6 +8,7 @@ using System.Windows.Forms.DataVisualization.Charting;
 using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
+using System.Threading;
 
 namespace MetalParser
 {
@@ -22,7 +23,7 @@ namespace MetalParser
         //Timer tpt = new Timer();
         //Timer tau = new Timer();
         //Timer tag = new Timer();
-        Timer tSamsung = new Timer();
+        System.Windows.Forms.Timer tSamsung = new System.Windows.Forms.Timer();
         //Timer tApple = new Timer();
         //int timeout = 10 * 60 * 1000; //10 минут
         int timeout = 60000;
@@ -45,9 +46,12 @@ namespace MetalParser
             InitializeComponent();
         }
 
-        private static async Task<string> FindValue(string Url)
+        private async Task<string> FindValue(string Url, Object sender, EventArgs e)
         {
+            tSamsung.Interval = timeout;
             string parsedValue = null;
+            CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+            CancellationToken token = cancelTokenSource.Token;
             await Task.Run(async () =>
             {
                 try
@@ -55,35 +59,52 @@ namespace MetalParser
                     HtmlWeb web = new HtmlWeb();
                     HtmlDocument doc = web.Load(Url);
                     if (doc != null)
-                        parsedValue = doc.DocumentNode.SelectNodes("//*[@id='last_last']")[0].InnerText;
+                    {
+                        string openState = doc.DocumentNode.SelectNodes("//*[@id=\"quotes_summary_current_data\"]/div[1]/div[2]/div[2]/text()")[2].InnerText;
+                        parsedValue = openState.ToLower().Contains("закрыт") ? "closed" : doc.DocumentNode.SelectNodes("//*[@id='last_last']")[0].InnerText;
+                        if (parsedValue == "closed")
+                        {
+                            cancelTokenSource.Cancel();
+                        }
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     parsedValue = "lost connection";
                 }
             });
+            if(cancelTokenSource.IsCancellationRequested)
+            {
+                tSamsung.Interval = timeout * 10; //Уменьшение частоты проверки в случае закрытой биржи до 10 минут
+                return null;
+            }
             return parsedValue;
         }
 
         /// <summary>
-        /// Метод асинхронно получает значение для соответствующего металла и записывает его в файл
+        /// Метод асинхронно получает значение акции и записывает его в файл
         /// </summary>
-        /// <param name="url">Ссылка на страницу со значением стоимости металла</param>
-        /// <param name="option">Вариант металла: platinum, gold, silver</param>
-        private async void GetValue(string url)
+        /// <param name="url">Ссылка на страницу со значением стоимости акции</param>
+        private async void GetValue(string url, Object sender, EventArgs e)
         {
-            string value = await FindValue(url);
-            value = value.Replace(".", "");
-            string date = DateTime.Now.ToString("dd.MM.yy hh:mm");
-            string line = $"{date} | {value}";
-            double lineExtr = 0;
-            
-            using (StreamWriter sw = new StreamWriter(samsung_path, true)) //переделать на json
+            string value = await FindValue(url, sender, e);
+            DateTime date = DateTime.Now;
+            if (value == null)
             {
-                sw.WriteLine(line);
+                textBox1.Text += $"{date.ToString("dd.MM.yy hh:mm")} | Торги закрыты.{Environment.NewLine}";
+                return;
+            }
+
+            value = value.Replace(".", "");
+            string line = $"{date.ToString("dd.MM.yy hh:mm")} | {value}";
+            
+            using (FileStream fs = new FileStream(samsungJsonData, FileMode.Append)) //переделать на json
+            {
+                Data data = new Data(date, Double.Parse(value));
+                DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(Data));
+                jsonFormatter.WriteObject(fs, data);
                 if (value != "lost connection")
                 {
-                    line += "; expected " + lineExtr;
                     samsungValues.Add(Double.Parse(value));
                 }
             }
@@ -92,18 +113,14 @@ namespace MetalParser
 
         private void FillValueListsFromFile(string path, List<double> valuesList) //переделать на json
         {
-            using (StreamReader sr = new StreamReader(path, System.Text.Encoding.Default))
+            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(Data));
+            using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
             {
-                double value;
-                string line;
+                List<Data> dataList = jsonFormatter.ReadObject(fs) as List<Data>;
 
-                if (sr.EndOfStream)
-                    return;
-
-                while ((line = sr.ReadLine()) != null)
+                foreach (Data data in dataList)
                 {
-                    value = Double.Parse(line.Substring(line.IndexOf('|') + 2));
-                    valuesList.Add(value);
+                    valuesList.Add(data.Value);
                 }
             }
         }
@@ -116,7 +133,7 @@ namespace MetalParser
             button2.Enabled = true;
 
             tSamsung.Interval = timeout;
-            tSamsung.Tick += (timer, arguments) => GetValue(samsungUrl);
+            tSamsung.Tick += (timer, arguments) => GetValue(samsungUrl, sender, e);
             tSamsung.Start();
         }
 
@@ -134,7 +151,7 @@ namespace MetalParser
                 //FillValueListsFromFile(platinum_path, platinumValues);
                 //FillValueListsFromFile(gold_path, goldValues);
                 //FillValueListsFromFile(silver_path, silverValues);
-                FillValueListsFromFile(samsung_path, samsungValues);
+                FillValueListsFromFile(samsungJsonData, samsungValues);
                 //FillValueListsFromFile(apple_path, appleValues);
             }
             catch(Exception ex)
