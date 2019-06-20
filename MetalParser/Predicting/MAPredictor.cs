@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MathNet.Numerics.Statistics;
+using MathNet.Numerics.Integration;
 
 namespace MetalParser.Predicting
 {
@@ -19,12 +21,17 @@ namespace MetalParser.Predicting
             Double maSum = 0;
             int window = values.Count / accuracy;
 
-            for (int i = values.Count - 1; i > window; i--) //Gotta get rid of magic number
+            for (int i = values.Count - 1; i > window; i--)
             {
                 maSum += values[i];
             }
+            return maSum/accuracy;
+        }
 
-            return maSum/window;
+        public static List<Double> PredictList(List<Double> values, int accuracy)
+        {
+            var a = values.MovingAverage(accuracy);
+            return a.ToList<Double>();
         }
     }
 }

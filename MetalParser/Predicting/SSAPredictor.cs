@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Factorization;
@@ -16,36 +17,59 @@ namespace MetalParser.Predicting
             return Reconstruct(values, accuracy)[0];
         }
 
-        private static Double[,] BuildTrayectoryMatrix(List<Double> values)
+        public static List<Double> PredictList(List<Double> values, int accuracy)
+        {
+            List<Double> orig = new List<Double>(values);
+            List<Double> rec = new List<Double>(Reconstruct(values, accuracy).ToList());
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                rec[i] = rec[i] * 10 + orig[i];
+            }
+            return rec;
+        }
+
+        private static Matrix<Double> BuildTrayectoryMatrix(List<Double> values)
         {
             int N = values.Count;
             if (L > N / 2)
                 L = N - L;
 
             K = N - L + 1;
-            Double[,] X = new Double[L,K];
-            for (int i = 0; i < K; i++)
-                for (int j = 0; j < L; j++)
-                    X[i, j] = 0;
+            Matrix<Double> X = DenseMatrix.Create(K, L, 0);
 
-            for(int i = 0; i < L; i++)
+            for (int i = 0; i < K; i++) //Rows
             {
-                for (int j = 0; j < L + j -1; j++)
+                for (int j = 0; j < L; j++) //Cols
                 {
-                    X[i, j] = values[j];
+                    if (i + j <= values.Count - 1)
+                        X[i, j] = values[i + j];
                 }
             }
+
+            //Double[,] X = new Double[L,K];
+            //for (int i = 0; i < L; i++)
+            //    for (int j = 0; j < K; j++)
+            //        X[i, j] = 0;
+
+            //for(int i = 0; i < L; i++)
+            //{
+            //    for (int j = 0; j < L + j -1; j++)
+            //    {
+            //        X[i, j] = values[j];
+            //    }
+            //}
 
             return X;
         }
 
-        private static Matrix<Double> SVD(List<Double> values, int accuracy) //Singular Value Decomposition  //shitshitshitshitshit
-        {                                                                                             //shitshitshitshitshit
-            Matrix<Double> X = DenseMatrix.OfArray(BuildTrayectoryMatrix(values));                    //shitshitshitshitshit
-            Matrix<Double> V = X.Transpose() * X;                                                     //shitshitshitshitshit
-            Svd<Double> svd = V.Svd(true);                                                            //shitshitshitshitshit
-            Matrix<Double> U = svd.VT;                                                                //shitshitshitshitshit                                                               //shitshitshitshitshit
-            Matrix<Double> rca = U * V.Inverse();                                                     //shitshitshitshitshit
+        private static Matrix<Double> SVD(List<Double> values, int accuracy) //Singular Value Decomposition
+        {                                                    
+            Matrix<Double> X = BuildTrayectoryMatrix(values);
+            Matrix<Double> V = X.Transpose() * X;            
+            Svd<Double> svd = V.Svd(true);                   
+            Matrix<Double> U = svd.VT;                       
+            Matrix<Double> rca = U * V.Inverse();            
 
             return rca;
         }
@@ -58,11 +82,11 @@ namespace MetalParser.Predicting
             int Lp = Math.Max(L, K);
             int Kp = Math.Min(L, K);
 
-            for (int k = 0; k < Lp - 2; k++)
+            for (int k = 0; k < Kp; k++)
             {
-                for (int m = 0; m < k+1; m++)
+                for (int m = 1; m < k; m++)
                 {
-                    y[k + 1] += (1 / (k + 1)) * rca[m, k - m + 2];
+                    y[k + 1] += /*(1 / (Double.Parse(k.ToString()) + 1)) **/ rca[m, k - m];
                 }
             }
 
@@ -70,15 +94,15 @@ namespace MetalParser.Predicting
             {
                 for (int m = 1; m < Lp; m++)
                 {
-                    y[k + 1] += (1 / Lp) * rca[m, k - m + 2];
+                    y[k + 1] += /*(1 / Double.Parse(Lp.ToString())) **/ rca[m, k - m];
                 }
             }
 
             for (int k = Kp; k < N; k++)
             {
-                for (int m = k - Kp + 2; m < N - Kp + 1; m++)
+                for (int m = k - Kp + 2; m < N - Lp; m++)
                 {
-                    y[k + 1] += (1 / (N - K)) * rca[m, k - m + 2];
+                    y[k + 1] += /*(1 / Double.Parse((N - K).ToString())) **/ rca[m, k - m];
                 }
             }
 

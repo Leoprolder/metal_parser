@@ -5,18 +5,18 @@ namespace MetalParser.Predicting
 {
     class PredictorFactory
     {
-        private PredictorTypes _type;
+        public PredictorTypes Type;
 
         public PredictorFactory(PredictorTypes type)
         {
-            _type = type;
+            Type = type;
         }
 
-        public double? PredictValue(PredictorTypes type, List<Double> values, int accuracy)
+        public double? PredictValue(List<Double> values, int accuracy)
         {
             double? predictedValue = null;
 
-            switch (type)
+            switch (Type)
             {
                 case (PredictorTypes.MA):
                     predictedValue = MAPredictor.Predict(values, accuracy);

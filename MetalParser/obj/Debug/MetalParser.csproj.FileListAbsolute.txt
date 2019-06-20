@@ -91,3 +91,12 @@ D:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CoreCompil
 D:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CopyComplete
 D:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.exe
 D:\repositories\metal_parser\MetalParser\obj\Debug\MetalParser.pdb
+C:\!repositories\metal_parser\MetalParser\bin\Debug\MetalParser.exe.config
+C:\!repositories\metal_parser\MetalParser\bin\Debug\MetalParser.exe
+C:\!repositories\metal_parser\MetalParser\bin\Debug\MetalParser.pdb
+C:\!repositories\metal_parser\MetalParser\bin\Debug\HtmlAgilityPack.dll
+C:\!repositories\metal_parser\MetalParser\bin\Debug\MathNet.Numerics.dll
+C:\!repositories\metal_parser\MetalParser\bin\Debug\HtmlAgilityPack.pdb
+C:\!repositories\metal_parser\MetalParser\bin\Debug\HtmlAgilityPack.xml
+C:\!repositories\metal_parser\MetalParser\bin\Debug\MathNet.Numerics.xml
+C:\!repositories\metal_parser\MetalParser\obj\Debug\MetalParser.csproj.CopyComplete

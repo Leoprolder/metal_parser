@@ -9,6 +9,8 @@ using HtmlDocument = HtmlAgilityPack.HtmlDocument;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Threading;
+using MetalParser.Predicting;
+using System.Linq;
 
 namespace MetalParser
 {
@@ -38,7 +40,7 @@ namespace MetalParser
         List<double> platinumValues = new List<double>();
         List<double> goldValues = new List<double>();
         List<double> silverValues = new List<double>();
-        List<double> samsungValues = new List<double>();
+        List<Data> samsungValues = new List<Data>();
         List<double> appleValues = new List<double>();
 
         public Form1()
@@ -48,7 +50,7 @@ namespace MetalParser
 
         private async Task<string> FindValue(string Url, Object sender, EventArgs e)
         {
-            tSamsung.Interval = timeout;
+            //tSamsung.Interval = timeout;
             string parsedValue = null;
             CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
             CancellationToken token = cancelTokenSource.Token;
@@ -97,38 +99,57 @@ namespace MetalParser
 
             value = value.Replace(".", "");
             string line = $"{date.ToString("dd.MM.yy hh:mm")} | {value}";
-            
-            using (FileStream fs = new FileStream(samsungJsonData, FileMode.Append)) //переделать на json
+
+            if (value != "lost connection")
             {
                 Data data = new Data(date, Double.Parse(value));
-                DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(Data));
-                jsonFormatter.WriteObject(fs, data);
-                if (value != "lost connection")
-                {
-                    samsungValues.Add(Double.Parse(value));
-                }
+                WriteValue(samsungJsonData, data);
             }
+
             textBox1.Text += line + Environment.NewLine;
         }
 
-        private void FillValueListsFromFile(string path, List<double> valuesList) //переделать на json
+        /// <summary>
+        /// Пишет полученное значение в json-файл
+        /// </summary>
+        /// <param name="path">Путь к json-файлу</param>
+        /// <param name="data">Дата и цена акции</param>
+        private void WriteValue(string path, Data data)
         {
-            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(Data));
+            List<Data> values = ReadValues(path);
+            values.Add(data);
+
+            using (FileStream fs = new FileStream(samsungJsonData, FileMode.Append))
+            {
+                DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(List<Data>));
+                jsonFormatter.WriteObject(fs, values);
+            }
+        }
+
+        /// <summary>
+        /// Читает json-файл со значениями даты и цены и возвращает список
+        /// </summary>
+        /// <param name="path">Путь к json-файлу</param>
+        /// <returns></returns>
+        private List<Data> ReadValues(string path)
+        {
+            List<Data> valuesList = new List<Data>();
+            DataContractJsonSerializer jsonFormatter = new DataContractJsonSerializer(typeof(List<Data>));
             using (FileStream fs = new FileStream(path, FileMode.OpenOrCreate))
             {
                 List<Data> dataList = jsonFormatter.ReadObject(fs) as List<Data>;
 
                 foreach (Data data in dataList)
                 {
-                    valuesList.Add(data.Value);
+                    valuesList.Add(data);
                 }
             }
+
+            return valuesList;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            /*string value = await GetValue(platinum);
-            Console.WriteLine(value);*/
             button1.Enabled = false;
             button2.Enabled = true;
 
@@ -148,11 +169,12 @@ namespace MetalParser
         {
             try
             {
-                //FillValueListsFromFile(platinum_path, platinumValues);
-                //FillValueListsFromFile(gold_path, goldValues);
-                //FillValueListsFromFile(silver_path, silverValues);
-                FillValueListsFromFile(samsungJsonData, samsungValues);
-                //FillValueListsFromFile(apple_path, appleValues);
+                comboBox1.SelectedIndex = 0;
+                //При загрузке формы читаем файл и заполняем список значениями из него
+                foreach(Data data in ReadValues(samsungJsonData))
+                {
+                    samsungValues.Add(data);
+                }
             }
             catch(Exception ex)
             {
@@ -172,21 +194,116 @@ namespace MetalParser
 
         private void button3_Click(object sender, EventArgs e)
         {
-            Chart bar = new Chart();
-            bar.Parent = this;
-            bar.Dock = DockStyle.None;
-            bar.Location = new System.Drawing.Point(388, 81);
-            bar.Margin = new Padding(3, 3, 3, 3);
-            bar.Size = new System.Drawing.Size(519, 382);
+            //Chart bar = new Chart();
+            //bar.Palette = ChartColorPalette.Pastel;
+            //bar.Parent = this;
+            //bar.Dock = DockStyle.None;
+            //bar.Location = new System.Drawing.Point(388, 81);
+            //bar.Margin = new Padding(3, 3, 3, 3);
+            //bar.Size = new System.Drawing.Size(519, 382);
+            bar.ChartAreas.Clear();
             bar.ChartAreas.Add(new ChartArea("Time series"));
-            Series series = new Series("test");
+            Series series = new Series("Original");
             series.ChartType = SeriesChartType.Line;
-            for (double x = -Math.PI; x <= Math.PI; x += Math.PI / 10.0)
+            for (int i = 0; i < samsungValues.Count; i++)
             {
-                series.Points.AddXY(x, Math.Sin(x));
+                series.Points.AddXY(samsungValues[i].Date, samsungValues[i].Value);
             }
 
+            int option = comboBox1.SelectedIndex;
+            PredictorFactory predictorFactory = null;
+            switch (option)
+            {
+                case 0:
+                    predictorFactory = new PredictorFactory(PredictorTypes.MA);
+                    break;
+
+                case 1:
+                    predictorFactory = new PredictorFactory(PredictorTypes.ARMA);
+                    break;
+
+                case 2:
+                    predictorFactory = new PredictorFactory(PredictorTypes.SSA);
+                    break;
+            }
+
+            Series estimation = new Series("Estimated");
+            estimation.ChartType = SeriesChartType.Line;
+            List<Double?> predictedValues = new List<Double?>();
+            int accuracy = 10;
+            if (predictorFactory.Type == PredictorTypes.MA)
+            {
+                List<Double> predictedValues1 = new List<double>();
+                for (int i = 0; i < samsungValues.Count; i++)
+                {
+                    //if (i < accuracy)
+                    //    predictedValues.Add(samsungValues[i].Value);
+                    //else
+                    //{
+                    //    Double sum = 0.0;
+                    //    for (int j = i; j < i + accuracy; j++)
+                    //    {
+                    //        sum += samsungValues[j - accuracy].Value;
+                    //    }
+                    //    predictedValues.Add(sum/accuracy);
+                    //}
+                    predictedValues1.Add(samsungValues[i].Value);
+                }
+
+                //predictedValues1 = new List<Double>(MAPredictor.PredictList(predictedValues1, accuracy));
+                List<Double> copy = MAPredictor.PredictList(predictedValues1, accuracy);
+
+                for (int i = 0; i < samsungValues.Count; i++)
+                {
+                    estimation.Points.AddXY(samsungValues[i].Date, copy[i]);
+                }
+            }
+            else if (predictorFactory.Type == PredictorTypes.ARMA)
+            {
+                List<Double> copy = new List<Double>();
+                for (int i = 0; i < samsungValues.Count; i++)
+                {
+                    //if (i < accuracy)
+                    //    predictedValues.Add(samsungValues[i].Value);
+                    //else
+                    //{
+                    //    List<Double> tempList = new List<Double>();
+                    //    for (int j = i; j < i + accuracy; j++)
+                    //    {
+                    //        tempList.Add(samsungValues[j - accuracy].Value);
+                    //    }
+                    //    predictedValues.Add(predictorFactory.PredictValue(tempList, accuracy));
+                    //}
+                    copy.Add(samsungValues[i].Value);
+                }
+
+                List<Double> prediction = ARMAPredictor.PredictList(copy, accuracy);
+
+                for (int i = 0; i < samsungValues.Count; i++)
+                {
+                    estimation.Points.AddXY(samsungValues[i].Date, prediction[i]);
+                }
+            }
+            else if (predictorFactory.Type == PredictorTypes.SSA)
+            {
+                //?
+                List<Double> temp = new List<Double>();
+                for (int i = 0; i < samsungValues.Count; i++)
+                {
+                    temp.Add(samsungValues[i].Value);
+                }
+                List<double> predictedValues1 = SSAPredictor.PredictList(temp, 10);
+                for (int i = 0; i < samsungValues.Count; i++)
+                {
+                    estimation.Points.AddXY(samsungValues[i].Date, predictedValues1[i]);
+                }
+            }
+
+            bar.ChartAreas[0].AxisY.Minimum = 900;
+
+            bar.Series.Clear();
             bar.Series.Add(series);
+            bar.Series.Add(estimation);
         }
     }
 }
