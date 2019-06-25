@@ -9,7 +9,7 @@ namespace MetalParser.Predicting
 {
     class SSAPredictor
     {
-        private static int L = 100;
+        private static int L = 150;
         private static int K;
 
         public static double Predict(List<Double> values, int accuracy)
@@ -32,8 +32,8 @@ namespace MetalParser.Predicting
         private static Matrix<Double> BuildTrayectoryMatrix(List<Double> values)
         {
             int N = values.Count;
-            if (L > N / 2)
-                L = N - L;
+            //if (L > N / 2)
+            //    L = (N * 4)/10;
 
             K = N - L + 1;
             Matrix<Double> X = DenseMatrix.Create(K, L, 0);
@@ -47,25 +47,13 @@ namespace MetalParser.Predicting
                 }
             }
 
-            //Double[,] X = new Double[L,K];
-            //for (int i = 0; i < L; i++)
-            //    for (int j = 0; j < K; j++)
-            //        X[i, j] = 0;
-
-            //for(int i = 0; i < L; i++)
-            //{
-            //    for (int j = 0; j < L + j -1; j++)
-            //    {
-            //        X[i, j] = values[j];
-            //    }
-            //}
-
             return X;
         }
 
         private static Matrix<Double> SVD(List<Double> values, int accuracy) //Singular Value Decomposition
         {                                                    
             Matrix<Double> X = BuildTrayectoryMatrix(values);
+            
             Matrix<Double> V = X.Transpose() * X;            
             Svd<Double> svd = V.Svd(true);                   
             Matrix<Double> U = svd.VT;                       

@@ -22,17 +22,18 @@ namespace MetalParser.Predicting
             List<Double> result = new List<Double>();
             int parameter = 2;
             double[] coefficients = GetCoefficients(values, parameter);
-            double epsilon = Normal.Sample(0.0, values.StandardDeviation());
             List<Double> maModel = MAPredictor.PredictList(values, accuracy);
 
             for (int i = 0; i < values.Count; i++)
             {
+                double epsilon = Normal.Sample(0.0, values.StandardDeviation());
                 double sum = 0;
                 for (int j = 0; j < parameter; j++)
                 {
-                    if (i > parameter)
+                    if (i >= parameter)
                     {
                         sum += values[i - j] * coefficients[parameter - j - 1];
+                        sum += sum == 0 ? 0 : 490;
                     }
                     else
                     {
@@ -40,7 +41,7 @@ namespace MetalParser.Predicting
                         break;
                     }
                 }
-                result.Add(epsilon + (sum + maModel[i])/2);
+                result.Add(epsilon + (sum + maModel[i])/2.0);
             }
 
             return result;
